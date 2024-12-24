@@ -34,7 +34,7 @@ mongoose.connect('mongodb://localhost:27017/mech')
 });
 
 
-app.use('/user',userAuth_route)
+app.use('/',userAuth_route)
 
 app.listen(PORT,()=>{
     console.log(`server running on http://localhost:${PORT}`);  

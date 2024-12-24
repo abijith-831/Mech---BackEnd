@@ -24,8 +24,30 @@ class UserRepositories {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield userModel_1.default.findOne({ email });
             const userdata = data === null || data === void 0 ? void 0 : data.toObject();
-            console.log('rhr', userdata);
+            console.log(userdata);
             return userdata;
+        });
+    }
+    findUserById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield userModel_1.default.findById(id);
+        });
+    }
+    verifyUser(email, isVerified) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield userModel_1.default.updateOne({ email }, { isVerified });
+            return yield userModel_1.default.findOne({ email });
+        });
+    }
+    UpdatePassword(email, field, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const update = { $set: { [field]: value } };
+            return yield userModel_1.default.findOneAndUpdate({ email }, update, { new: true });
+        });
+    }
+    updateProfile(userId, updateProfileDto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield userModel_1.default.findByIdAndUpdate(userId, { $set: updateProfileDto }, { new: true });
         });
     }
 }

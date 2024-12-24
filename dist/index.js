@@ -29,7 +29,7 @@ mongoose_1.default.connect('mongodb://localhost:27017/mech')
     .catch((err) => {
     console.error('MongoDB connection error:', err);
 });
-app.use('/user', authRoutes_1.default);
+app.use('/', authRoutes_1.default);
 app.listen(PORT, () => {
     console.log(`server running on http://localhost:${PORT}`);
 });
