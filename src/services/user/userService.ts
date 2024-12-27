@@ -25,8 +25,6 @@ export class UserService{
 
         return await this.userRepositories.updateProfile(id,updateddata)
 
-        
-
     }
 
     async getProfileData(userId:string){

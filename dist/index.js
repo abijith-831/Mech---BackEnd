@@ -8,6 +8,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const authRoutes_1 = __importDefault(require("./Routes/user/authRoutes"));
+const authRoutes_2 = __importDefault(require("./Routes/mech/authRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
@@ -30,6 +31,7 @@ mongoose_1.default.connect('mongodb://localhost:27017/mech')
     console.error('MongoDB connection error:', err);
 });
 app.use('/', authRoutes_1.default);
+app.use('/mech', authRoutes_2.default);
 app.listen(PORT, () => {
     console.log(`server running on http://localhost:${PORT}`);
 });
