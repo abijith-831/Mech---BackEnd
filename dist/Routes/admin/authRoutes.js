@@ -4,9 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const authController_1 = __importDefault(require("../../controllers/mechController/authController"));
-const mechAuth_route = express_1.default.Router();
+const authController_1 = __importDefault(require("../../controllers/adminController/authController"));
 const authController = new authController_1.default();
-mechAuth_route.post('/register', authController.register);
-mechAuth_route.post('/login', authController.login);
-exports.default = mechAuth_route;
+const adminAuth_route = express_1.default.Router();
+adminAuth_route.post('/login', authController.adminLogin);
+exports.default = adminAuth_route;

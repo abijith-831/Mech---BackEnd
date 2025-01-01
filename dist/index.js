@@ -9,6 +9,8 @@ const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const authRoutes_1 = __importDefault(require("./Routes/user/authRoutes"));
 const authRoutes_2 = __importDefault(require("./Routes/mech/authRoutes"));
+const authRoutes_3 = __importDefault(require("./Routes/admin/authRoutes"));
+const adminRoutes_1 = __importDefault(require("./Routes/admin/adminRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
@@ -32,6 +34,8 @@ mongoose_1.default.connect('mongodb://localhost:27017/mech')
 });
 app.use('/', authRoutes_1.default);
 app.use('/mech', authRoutes_2.default);
+app.use('/admin/auth', authRoutes_3.default);
+app.use('/admin', adminRoutes_1.default);
 app.listen(PORT, () => {
     console.log(`server running on http://localhost:${PORT}`);
 });

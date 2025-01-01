@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { IOtp } from "../../models/user/otpModel";
 import { generateAcessToken, generateRefreshToken } from "../../utils/token.util";
 import { IUser } from "../../models/user/userModel";
-
+ 
 
 const mailService = new MailService();
 
@@ -94,7 +94,7 @@ async userSignup(username: string,email: string,password: string): Promise<{ suc
     console.log(newOtp);
     await this.otpRepositories.createOtp({  email, otp: newOtp,} as unknown as IOtp)
     await mailService.sendOtpEmail(email, newOtp);
-
+ 
     return {
       success: true,
       message: "User created successfully",

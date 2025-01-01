@@ -34,6 +34,6 @@ const userSchema:Schema=new Schema({
         default:false
      }
     
-})
+}) 
 
 export default mongoose.model<IUser>('User',userSchema)

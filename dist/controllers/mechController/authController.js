@@ -21,14 +21,46 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const authService_1 = require("../../services/mech/authService");
+const HttpStatus_1 = require("../../enums/HttpStatus");
 const authService = new authService_1.AuthService();
 class AuthController {
     register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('bakcend');
                 const FormData = __rest(req.body, []);
-                console.log('fo', FormData);
+                const response = yield authService.mechRegister(FormData);
+                if (!response.success) {
+                    res.status(HttpStatus_1.HttpStatus.BAD_REQUEST).json(response);
+                }
+                else {
+                    res.status(HttpStatus_1.HttpStatus.CREATED).json({ success: true,
+                        message: "user Registered successfully",
+                        mech: response.mech
+                    });
+                }
+            }
+            catch (error) {
+                console.error("Error in registration:", error);
+                res.status(HttpStatus_1.HttpStatus.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: "An error occurred during registration.",
+                });
+            }
+        });
+    }
+    login(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email, password } = req.body;
+                const response = yield authService.mechLogin(email, password);
+                if (!response.success) {
+                    res.status(HttpStatus_1.HttpStatus.BAD_REQUEST).json(response);
+                }
+                else {
+                    res.status(HttpStatus_1.HttpStatus.CREATED).json({ success: true,
+                        message: "user Registered successfully",
+                    });
+                }
             }
             catch (error) {
             }

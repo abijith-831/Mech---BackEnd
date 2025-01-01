@@ -4,6 +4,8 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import userAuth_route from './Routes/user/authRoutes'
 import mechAuth_route from './Routes/mech/authRoutes'
+import adminAuth_route from './Routes/admin/authRoutes'
+import admin_routes from './Routes/admin/adminRoutes'
 
 
 dotenv.config()
@@ -37,6 +39,10 @@ mongoose.connect('mongodb://localhost:27017/mech')
 
 app.use('/',userAuth_route)
 app.use('/mech',mechAuth_route)
+app.use('/admin/auth',adminAuth_route)
+app.use('/admin',admin_routes)
+
+
 
 app.listen(PORT,()=>{
     console.log(`server running on http://localhost:${PORT}`);  
