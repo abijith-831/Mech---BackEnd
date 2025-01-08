@@ -37,23 +37,45 @@ const mongoose_1 = __importStar(require("mongoose"));
 const userSchema = new mongoose_1.Schema({
     username: {
         type: String,
-        required: true
+        required: true,
     },
     email: {
         type: String,
         unique: true,
-        required: true
+        required: true,
     },
     password: {
         type: String,
     },
     isVerified: {
         type: Boolean,
-        default: false
+        default: false,
     },
     isBlocked: {
         type: Boolean,
-        default: false
+        default: false,
+    },
+    image: {
+        type: String,
+        default: "",
+    },
+    phone: {
+        type: String,
+        default: ''
+    },
+    addresses: {
+        type: [
+            {
+                area: { type: String, default: "" },
+                village: { type: String, default: "" },
+                landmark: { type: String, default: "" },
+                city: { type: String, default: "" },
+                pincode: { type: String, default: "" },
+            }
+        ],
+        default: [],
     }
+}, {
+    timestamps: true,
 });
-exports.default = mongoose_1.default.model('User', userSchema);
+exports.default = mongoose_1.default.model("User", userSchema);

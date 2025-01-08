@@ -24,7 +24,7 @@ class AuthController {
                 else {
                     res.status(HttpStatus_1.HttpStatus.CREATED).json({ success: true,
                         message: "user Registered successfully",
-                        user: response.user
+                        user: response.data
                     });
                 }
             }
@@ -78,19 +78,24 @@ class AuthController {
     }
     login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             const userData = req.body;
             try {
                 const response = yield authService.userLogin(userData);
                 if (response.success) {
-                    res.status(HttpStatus_1.HttpStatus.CREATED).cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 1000 })
-                        .json({ success: true,
+                    res
+                        .status(HttpStatus_1.HttpStatus.CREATED)
+                        .cookie('refreshToken', response.refreshToken, {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'none',
+                        maxAge: 7 * 24 * 60 * 1000,
+                    })
+                        .json({
+                        success: true,
                         message: response.message,
-                        data: {
-                            username: (_a = response.data) === null || _a === void 0 ? void 0 : _a.username,
-                            email: (_b = response.data) === null || _b === void 0 ? void 0 : _b.email
-                        },
-                        accessToken: response.accessToken });
+                        data: response.data,
+                        accessToken: response.accessToken,
+                    });
                 }
                 else {
                     res.status(HttpStatus_1.HttpStatus.BAD_REQUEST).json(response);
@@ -110,7 +115,6 @@ class AuthController {
             const data = req.body;
             try {
                 const response = yield authService.forgetPass(data);
-                console.log(response, 'k');
                 if (!response.success) {
                     res.status(HttpStatus_1.HttpStatus.BAD_REQUEST).json(response);
                 }
@@ -142,7 +146,6 @@ class AuthController {
     logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('control');
                 res.clearCookie('refreshToken');
                 res.json({ message: 'Successfully Logged Out' });
                 return;

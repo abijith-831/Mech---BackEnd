@@ -5,7 +5,7 @@ import { HttpStatus } from "../../enums/HttpStatus";
 
 
 
-
+ 
 const authService = new AuthService();
 
 class AuthController {
@@ -21,7 +21,7 @@ async signUp(req: Request, res: Response) {
         email,
         password
       );
-
+      
       if (!response.success) {
 
         res.status(HttpStatus.BAD_REQUEST).json(response);
@@ -30,7 +30,7 @@ async signUp(req: Request, res: Response) {
 
         res.status(HttpStatus.CREATED) .json({ success: true,
              message: "user Registered successfully",
-             user: response.user
+             user: response.data
              });       
       }
 
@@ -116,40 +116,39 @@ async resendOtp(req:Request,res:Response){
 }
 
 
-async login(req:Request,res:Response){
+async login(req: Request, res: Response) {
+  const userData = req.body;
 
-     const userData=req.body  
-    try {
-      const response =await authService.userLogin(userData)
-    
+  try {
+    const response = await authService.userLogin(userData);
 
-      if(response.success){
-
-        res.status(HttpStatus.CREATED).cookie('refreshToken',
-        response.refreshToken,{httpOnly:true,secure:true,sameSite:'none',maxAge:7*24*60*1000})
-        .json({success:true,
+    if (response.success) {
+      res
+        .status(HttpStatus.CREATED)
+        .cookie('refreshToken', response.refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+          maxAge: 7 * 24 * 60 * 1000,
+        })
+        .json({
+          success: true,
           message: response.message,
-          data:{
-            username:response.data?.username,
-            email:response.data?.email
-          },
-          accessToken:response.accessToken });
-
-      }else{
-
-        res.status(HttpStatus.BAD_REQUEST).json(response)
-
-      }
-      
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Something went wrong during login. Please try again later.',
-      });
+          data: response.data, 
+          accessToken: response.accessToken,
+        });
+    } else {
+      res.status(HttpStatus.BAD_REQUEST).json(response);
     }
-      
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Something went wrong during login. Please try again later.',
+    });
+  }
 }
+
   
 
 async forgetPass(req:Request,res:Response){
@@ -159,8 +158,6 @@ async forgetPass(req:Request,res:Response){
     try {
 
       const response=await authService.forgetPass(data)
-
-      console.log(response,'k')
 
       if (!response.success) {
 
@@ -214,7 +211,6 @@ async resetPass(req:Request,res:Response){
 async logout(req:Request,res:Response){
 
     try {
-      console.log('control');
         
       res.clearCookie('refreshToken')
 

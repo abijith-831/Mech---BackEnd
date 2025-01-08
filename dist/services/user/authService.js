@@ -8,17 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -50,7 +39,7 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             const existingUser = yield this.userRepositories.findUserByEmail(email);
             if (existingUser && existingUser.isVerified) {
-                return { success: false, message: "user already existed" };
+                return { success: false, message: "User already exists" };
             }
             if (existingUser && !existingUser.isVerified) {
                 const getOtp = yield this.otpRepositories.findOtpByEmail(email);
@@ -58,20 +47,32 @@ class AuthService {
                     const currentTime = new Date().getTime();
                     const expirationTime = new Date(getOtp.createdAt).getTime() + 5 * 60 * 1000;
                     if (currentTime < expirationTime) {
-                        return { success: false, message: "OTP is still valid. Please verify using the same OTP." };
+                        return {
+                            success: false,
+                            message: "OTP is still valid. Please verify using the same OTP.",
+                        };
                     }
                     else {
                         const newOtp = (0, exports.generateOtp)();
                         yield this.otpRepositories.updateOtpByEmail(email, newOtp);
                         yield mailService.sendOtpEmail(email, newOtp);
-                        return { success: false, message: "OTP expired. A new OTP has been sent to your email." };
+                        return {
+                            success: false,
+                            message: "OTP expired. A new OTP has been sent to your email.",
+                        };
                     }
                 }
                 else {
                     const newOtp = (0, exports.generateOtp)();
-                    yield this.otpRepositories.create({ email, otp: newOtp, });
+                    yield this.otpRepositories.create({
+                        email,
+                        otp: newOtp,
+                    });
                     yield mailService.sendOtpEmail(email, newOtp);
-                    return { success: false, message: "No OTP found. A new OTP has been sent to your email." };
+                    return {
+                        success: false,
+                        message: "No OTP found. A new OTP has been sent to your email.",
+                    };
                 }
             }
             const hashedPassword = yield hashPassword(password);
@@ -87,17 +88,23 @@ class AuthService {
                 };
             }
             const newOtp = (0, exports.generateOtp)();
-            console.log(newOtp);
-            yield this.otpRepositories.createOtp({ email, otp: newOtp, });
+            yield this.otpRepositories.createOtp({
+                email,
+                otp: newOtp,
+            });
             yield mailService.sendOtpEmail(email, newOtp);
+            const accessToken = yield (0, token_util_1.generateAcessToken)(savedDetails);
+            const refreshToken = yield (0, token_util_1.generateRefreshToken)(savedDetails);
             return {
                 success: true,
                 message: "User created successfully",
-                user: {
-                    id: savedDetails.id,
+                data: {
+                    userId: savedDetails.id,
                     username: savedDetails.username,
                     email: savedDetails.email,
                 },
+                accessToken,
+                refreshToken,
             };
         });
     }
@@ -148,23 +155,25 @@ class AuthService {
             const { email, password } = userData;
             const existingUser = yield this.userRepositories.findUserByEmail(email);
             if (!existingUser) {
-                return { success: false, message: 'invalid email or Password' };
+                return { success: false, message: 'Invalid Email or Password' };
             }
             const validPassword = yield bcryptjs_1.default.compare(password, existingUser.password);
             if (!validPassword) {
                 return { success: false, message: 'Invalid Email or Password' };
             }
-            if (existingUser && existingUser.isBlocked) {
-                return { success: false, message: 'the user is blocked' };
+            if (existingUser.isBlocked) {
+                return { success: false, message: 'The user is blocked' };
             }
-            const userdata = {
-                username: existingUser.username,
-                email: existingUser.email
-            };
-            const data = __rest(existingUser, []);
-            const accessToken = yield (0, token_util_1.generateAcessToken)(data);
+            const accessToken = yield (0, token_util_1.generateAcessToken)(existingUser);
             const refreshToken = yield (0, token_util_1.generateRefreshToken)(existingUser);
-            return { success: true, message: 'Login Successful...!', data: userdata, accessToken, refreshToken };
+            const sanitizedUser = Object.assign(Object.assign({}, existingUser), { password: undefined });
+            return {
+                success: true,
+                message: 'Login Successful...!',
+                data: sanitizedUser,
+                accessToken,
+                refreshToken,
+            };
         });
     }
     forgetPass(forgetPass) {

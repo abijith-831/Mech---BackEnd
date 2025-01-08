@@ -19,11 +19,6 @@ async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, 10);
 }
 
-interface userData {
-
-   username: string,email: string,
-
-}
 
 export class AuthService {
   
@@ -39,73 +34,104 @@ export class AuthService {
 
   }
 
-async userSignup(username: string,email: string,password: string): Promise<{ success: boolean; message: string; user?: { id: any; username: string; email: string } }> {
+  async userSignup(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+      userId: any;
+      username: string;
+      email: string;
+    };
+    accessToken?: string;
+    refreshToken?: string;
+  }> {
     const existingUser = await this.userRepositories.findUserByEmail(email);
-
+  
     if (existingUser && existingUser.isVerified) {
-      return { success: false, message: "user already existed" };
+      return { success: false, message: "User already exists" };
     }
-
+  
     if (existingUser && !existingUser.isVerified) {
       const getOtp = await this.otpRepositories.findOtpByEmail(email);
       if (getOtp) {
         const currentTime = new Date().getTime();
-        const expirationTime =new Date(getOtp.createdAt).getTime() + 5 * 60 * 1000;
-
+        const expirationTime = new Date(getOtp.createdAt).getTime() + 5 * 60 * 1000;
+  
         if (currentTime < expirationTime) {
-          return {success: false,message: "OTP is still valid. Please verify using the same OTP." };
+          return {
+            success: false,
+            message: "OTP is still valid. Please verify using the same OTP.",
+          };
         } else {
-          const newOtp = generateOtp()
-
+          const newOtp = generateOtp();
+  
           await this.otpRepositories.updateOtpByEmail(email, newOtp);
-
           await mailService.sendOtpEmail(email, newOtp);
-
-          return {success: false, message: "OTP expired. A new OTP has been sent to your email." };
+  
+          return {
+            success: false,
+            message: "OTP expired. A new OTP has been sent to your email.",
+          };
         }
       } else {
         const newOtp = generateOtp();
-
-        await this.otpRepositories.create({email,otp: newOtp,} as unknown as IOtp)
-
+  
+        await this.otpRepositories.create({
+          email,
+          otp: newOtp,
+        } as unknown as IOtp);
+  
         await mailService.sendOtpEmail(email, newOtp);
-
-        return {success: false,message: "No OTP found. A new OTP has been sent to your email." }
-
+  
+        return {
+          success: false,
+          message: "No OTP found. A new OTP has been sent to your email.",
+        };
       }
-
     }
-
+  
     const hashedPassword = await hashPassword(password);
-
+  
     const savedDetails = await this.userRepositories.createUser({
       username: username,
       email: email,
       password: hashedPassword,
-    })
-
+    });
+  
     if (!savedDetails) {
       return {
         success: false,
         message: "User registration failed. Please try again later.",
       };
     }
+  
     const newOtp = generateOtp();
-    console.log(newOtp);
-    await this.otpRepositories.createOtp({  email, otp: newOtp,} as unknown as IOtp)
+    await this.otpRepositories.createOtp({
+      email,
+      otp: newOtp,
+    } as unknown as IOtp);
     await mailService.sendOtpEmail(email, newOtp);
- 
+  
+    const accessToken = await generateAcessToken(savedDetails as IUser);
+    const refreshToken = await generateRefreshToken(savedDetails);
+  
     return {
       success: true,
       message: "User created successfully",
-      user: {
-        id: savedDetails.id,
+      data: {
+        userId: savedDetails.id,
         username: savedDetails.username,
         email: savedDetails.email,
       },
+      accessToken,
+      refreshToken,
     };
-
-}
+  }
+  
 
 
 
@@ -174,44 +200,44 @@ async resendOtp(resendOtpdata:{email:string}){
 
   
 
-async userLogin(userData:{email:string,password:string}):Promise<{success:boolean,message:string,data?:userData,accessToken?:string,refreshToken?:string}>{
-    
-    const {email,password}=userData 
-
-    const existingUser=await this.userRepositories.findUserByEmail(email) 
-
-    if(!existingUser ){
-
-     return {success:false,message:'invalid email or Password'}
-    
+  async userLogin(userData: { email: string; password: string }): Promise<{
+    success: boolean;
+    message: string;
+    data?: any;
+    accessToken?: string;
+    refreshToken?: string;
+  }> {
+    const { email, password } = userData;
+  
+    const existingUser = await this.userRepositories.findUserByEmail(email);
+  
+    if (!existingUser) {
+      return { success: false, message: 'Invalid Email or Password' };
     }
-
-    const  validPassword=await bcrypt.compare(password,existingUser.password) 
-
-    if(!validPassword){
-
-      return {success:false,message:'Invalid Email or Password'}
-
+  
+    const validPassword = await bcrypt.compare(password, existingUser.password);
+    if (!validPassword) {
+      return { success: false, message: 'Invalid Email or Password' };
     }
-
-    if(existingUser && existingUser.isBlocked ){
-      return {success:false,message:'the user is blocked'}
+  
+    if (existingUser.isBlocked) {
+      return { success: false, message: 'The user is blocked' };
     }
-
-    const userdata : userData = {  
-      username:existingUser.username,
-      email:existingUser.email
-    }
-
-    const { ...data} = existingUser;
-
-    const accessToken= await generateAcessToken(data as IUser)
-
-    const refreshToken=await generateRefreshToken(existingUser)
-
-    return {success:true,message:'Login Successful...!',data:userdata,accessToken,refreshToken}
-
-}
+  
+    const accessToken = await generateAcessToken(existingUser as IUser);
+    const refreshToken = await generateRefreshToken(existingUser);
+  
+    const sanitizedUser = { ...existingUser, password: undefined };
+  
+    return {
+      success: true,
+      message: 'Login Successful...!',
+      data: sanitizedUser, 
+      accessToken,
+      refreshToken,
+    };
+  }
+  
 
 
 async forgetPass(forgetPass:{email:string}){

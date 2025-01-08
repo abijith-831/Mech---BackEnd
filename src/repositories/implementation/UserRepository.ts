@@ -35,7 +35,7 @@ export class UserRepositories {
         return await User.findOneAndUpdate({email},update,{new:true})
     }
 
-      async updateProfile(userId:string,updateProfileDto:UpdateProfileDto) : Promise<IUser | null>{
+    async updateProfile(userId:string,updateProfileDto:UpdateProfileDto) : Promise<IUser | null>{
         return await User.findByIdAndUpdate(
             userId,
             {$set:updateProfileDto},

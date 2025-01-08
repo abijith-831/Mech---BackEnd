@@ -6,7 +6,8 @@ import userAuth_route from './Routes/user/authRoutes'
 import mechAuth_route from './Routes/mech/authRoutes'
 import adminAuth_route from './Routes/admin/authRoutes'
 import admin_routes from './Routes/admin/adminRoutes'
-
+import profile_routes from './Routes/user/profileRoutes'
+import path from 'path';
 
 dotenv.config()
 
@@ -20,7 +21,7 @@ const corsOptions = {
   
 app.use(cors(corsOptions));
 app.use(express.json())
-
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 const mongoUri = process.env.MONGODB_URI;
 
@@ -38,6 +39,7 @@ mongoose.connect('mongodb://localhost:27017/mech')
 
 
 app.use('/',userAuth_route)
+app.use('/',profile_routes)
 app.use('/mech',mechAuth_route)
 app.use('/admin/auth',adminAuth_route)
 app.use('/admin',admin_routes)
